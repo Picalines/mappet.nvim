@@ -1,0 +1,284 @@
+==============================================================================
+Table of Contents                                              *mappet.contents*
+
+Basic Examples ··············································· |mappet.examples|
+Scopes ························································· |mappet.scopes|
+Group ···················································· |mappet.scopes.group|
+Buffer ·················································· |mappet.scopes.buffer|
+Template ·············································· |mappet.scopes.template|
+Nodes ··························································· |mappet.nodes|
+Map ························································· |mappet.nodes.map|
+Sub ························································· |mappet.nodes.sub|
+
+==============================================================================
+Basic Examples                                                 *mappet.examples*
+
+Declarative keymap DSL with grouping, nesting and templates.
+
+Quick examples:
+>lua
+  local keymap = require 'mappet'
+  local map, sub = keymap.map, keymap.sub
+
+  local keys = keymap.group 'unique-group-name'
+
+  keys 'Buffer: %s' {
+    map(']b', 'next') '<Cmd>bn<CR>',
+    map('[b', 'previous') '<Cmd>bp<CR>',
+    map('<LocalLeader>w', 'write') '<Cmd>silent w<CR>',
+    map('<Leader>w', 'write all') '<Cmd>silent wa!<CR>',
+  }
+
+  keys('Buffer: %s', { 'x' }) {
+    map('<LocalLeader>s', 'substitute') ':s///g',
+    map('<LocalLeader>gn', 'g norm') ':g//norm ',
+  }
+
+  keys { 'n', 'x' } {
+    map 'n' 'nzzzv',
+    map 'N' 'Nzzzv',
+    sub { expr = true } {
+      map 'k' "v:count == 0 ? 'gk' : 'k'",
+      map 'j' "v:count == 0 ? 'gj' : 'j'",
+    },
+  }
+<
+
+MappetMode                                                          *MappetMode*
+  Mode accepted by |vim.keymap.set|.
+
+  Type: ~
+    "n"|"v"|"x"|"s"|"o"|"i"|"l"|"c"|"t"|"!"
+
+
+MappetRhs                                                            *MappetRhs*
+  Right-hand side accepted by |vim.keymap.set|.
+
+  Type: ~
+    string|fun()
+
+
+MappetSpec : vim.keymap.set.Opts                                    *MappetSpec*
+  Scope options merged into nested mappings.
+
+  Examples:
+  >lua
+    keys { 'n', 'x', silent = true } {
+      -- ^ This table is called 'spec'.
+      -- Indexed items are modes.
+      -- Almost all key/values are vim.keymap.set options.
+    }
+
+    keys { when = vim.fn.has('win32') == 1 } {
+      -- Include mappings conditionally, e.g. only on Windows.
+    }
+
+    keys { 'n' } {
+      sub { 'x' } {
+        -- Mappings here will be in BOTH normal and visual modes.
+      },
+    }
+  <
+
+
+  Fields: ~
+    {integer} (MappetMode)
+    {when?} (boolean) Apply declaration only when true.
+    {desc?} (string) Group description template. Nested scopes use |string.format|
+
+
+MappetScope                                                        *MappetScope*
+  Callable scope returned by `group` and `buffer`.
+
+  Fields: ~
+
+
+
+==============================================================================
+Scopes                                                           *mappet.scopes*
+
+==============================================================================
+Group                                                      *mappet.scopes.group*
+
+M.group({name})                                         *mappet.nodes.sub.group*
+  Create or replace a global keymap group.
+
+  Calling `group` with an existing name clears mappings created by that group
+  first, then applies the new declaration (similar to clearing an |augroup|).
+
+
+  Parameters: ~
+    {name} (string)
+
+  Returns: ~
+    (MappetScope)
+
+  Usage: ~
+>lua
+    local keymap = require 'mappet'
+    local map = keymap.map
+
+    local keys = keymap.group 'group-name'
+
+    keys { 'n', silent = true } {
+      map('<Leader>qq', 'Quit') '<Cmd>wqa<CR>',
+    }
+<
+
+
+==============================================================================
+Buffer                                                    *mappet.scopes.buffer*
+
+M.buffer({name}, {bufnr})                              *mappet.nodes.sub.buffer*
+  Create or replace a buffer-local keymap group.
+
+  Like `group`, reusing the same name clears previous entries for that
+  group, but only in buffer `123`.
+
+  For autocommand callbacks, prefer `keymap.template()`
+  to keep setup flat and reusable.
+
+
+  Parameters: ~
+    {name} (string)
+    {bufnr} (integer)
+
+  Returns: ~
+    (MappetScope)
+
+  Usage: ~
+>lua
+    local keymap = require 'mappet'
+    local map = keymap.map
+
+    -- Assuming buffer 123 is valid and loaded:
+    local keys = keymap.buffer('group-name', 123)
+
+    keys { 'n' } {
+      -- ...
+    }
+<
+
+
+==============================================================================
+Template                                                *mappet.scopes.template*
+
+MappetTemplate                                                  *MappetTemplate*
+  Reusable declaration template that can be applied to scopes.
+
+  Fields: ~
+    {apply} (fun(self:MappetTemplate,scope:MappetScope):MappetTemplate)
+
+
+M.template()                                         *mappet.nodes.sub.template*
+  Create a reusable mapping template.
+
+  Useful for buffer-local autocommands to avoid lots of indentation.
+
+  Returns: ~
+    (MappetTemplate)
+
+  Usage: ~
+>lua
+    local keymap = require 'mappet'
+    local map = keymap.map
+
+    local qf_keys = keymap.template()
+
+    qf_keys('Quickfix: %s' ) {
+      map('q', 'close') '<Cmd>cclose<CR>',
+      -- ...
+    }
+
+    vim.api.nvim_create_autocmd('FileType', {
+      pattern = 'qf',
+      callback = function(event)
+        -- Create a buffer scope, then merge template into it
+        qf_keys:apply(keymap.buffer('quickfix', event.buf))
+      end,
+    })
+<
+
+
+==============================================================================
+Nodes                                                             *mappet.nodes*
+
+==============================================================================
+Map                                                           *mappet.nodes.map*
+
+M.map({lhs}, {desc?})                                     *mappet.nodes.sub.map*
+  Mapping node constructor.
+
+  Parameters: ~
+    {lhs} (string)
+    {desc?} (string)
+
+  Usage: ~
+>lua
+    local keymap = require 'mappet'
+    local map = keymap.map
+    local keys = keymap.group 'group-name'
+
+    keys { 'n' } {
+      -- Simple lhs to rhs:
+      map '<Leader>e' '<Cmd>Oil<CR>'
+
+      -- Add description:
+      map('<Leader>e', 'Explorer') '<Cmd>Oil<CR>'
+
+      -- Braces to indent long command:
+      map('y<C-g>', 'yank buffer path') {
+        '<Cmd>eval setreg(v:register, @%) | echo @%',
+      },
+
+      -- Braces for functions:
+      map('gx', 'system open') {
+        silent = true,  -- `vim.keymap.set` options are supported
+        noremap = true, -- (except buffer)
+        function()
+          vim.ui.open(MiniFiles.get_fs_entry().path)
+        end,
+      },
+    }
+<
+
+
+==============================================================================
+Sub                                                           *mappet.nodes.sub*
+
+M.sub({spec_or_desc}, {maybe_spec?})                      *mappet.nodes.sub.sub*
+  Nest a declaration subtree with extra scope options.
+
+  Parameters: ~
+    {spec_or_desc} (MappetSpec|string)
+    {maybe_spec?} (MappetSpec)
+
+  Returns: ~
+    (fun(items:MappetDecl):MappetSubNode)
+
+  Usage: ~
+>lua
+    local keymap = require 'mappet'
+    local map, sub = keymap.map, keymap.sub
+    local keys = keymap.group 'window'
+
+    keys('Window: %s', { 'n' }) {
+      sub 'go %s' {
+        map('<C-j>', 'down') '<C-w>j',
+        map('<C-k>', 'up') '<C-w>k',
+        map('<C-h>', 'left') '<C-w>h',
+        map('<C-l>', 'right') '<C-w>l',
+      },
+
+      sub { expr = true } {
+        -- ...
+      },
+
+      sub 'Description: %s' { expr = true } {
+        -- ...
+      },
+    },
+<
+
+
+vim:tw=78:ts=8:noet:ft=help:norl:
