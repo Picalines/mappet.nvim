@@ -1,0 +1,5 @@
+[tools]
+stylua = "latest"
+
+[tasks.fmt]
+run = "stylua lua/"
