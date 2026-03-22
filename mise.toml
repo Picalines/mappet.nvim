@@ -6,4 +6,7 @@ stylua = "latest"
 run = "stylua lua/"
 
 [tasks.doc]
-run = "mkdir -p doc && vimcats -f -i 2 --layout mini:2 lua/mappet.lua > doc/mappet.txt"
+run = '''
+mkdir -p doc
+vimcats -f -i 2 --layout mini:2 lua/mappet.lua > doc/mappet.txt
+'''
