@@ -65,6 +65,7 @@ keys 'Buffer: %s' {
   map('<Leader>w', 'write all') '<Cmd>silent wa!<CR>',
 }
 
+-- Descriptions merge from top to bottom
 keys('Window: %s', { 'n' }) {
   sub 'go %s' {
     map('<C-j>', 'down') '<C-w>j',
@@ -74,19 +75,26 @@ keys('Window: %s', { 'n' }) {
   },
 }
 
+-- Use templates to reduce nesting in autocommands
 local qf_keys = keymap.template()
 
-qf_keys('Quickfix: %s', { remap = true }) {
-  map('q', 'close') '<Cmd>cclose<CR>',
+qf_keys 'Quickfix: %s' {
   map('<Leader>q', 'close') '<Cmd>cclose<CR>',
 }
 
 vim.api.nvim_create_autocmd('FileType', {
   pattern = 'qf',
   callback = function(event)
+    -- Copy mappings from template to the quickfix buffer
     qf_keys:apply(keymap.buffer('quickfix', event.buf))
   end,
 })
 ```
 
 For all options, modes, and API details, see [`doc/mappet.txt`](doc/mappet.txt).
+
+## Why?
+
+I find the standard Neovim APIs hard to type out and experiment with. I started with [this keymap function](https://github.com/Picalines/dotfiles/blob/1a773605fb5366600391666f33e796f9a2a65cd7/nvim/lua/util/keymap.lua) ([usage example](https://github.com/Picalines/dotfiles/blob/c5cf81f9830f10d49292d086debd5e85d5b7c7a0/nvim/lua/settings/global.lua#L62)) in my dotfiles, but it wasn't type-checked and made autocommands too nested
+
+Pure overengineering... just like everything I do :)
