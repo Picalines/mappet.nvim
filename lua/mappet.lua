@@ -208,8 +208,8 @@ local function compile_decl(maps, decl, context)
         })
       end
     else
-      ---@diagnostic disable-next-line: undefined-field
       vim.notify(
+        ---@diagnostic disable-next-line: undefined-field
         string.format('keymap: node `%s` is not implemented', node.kind),
         vim.log.levels.WARN
       )
