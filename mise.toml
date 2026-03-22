@@ -3,14 +3,23 @@ stylua = "latest"
 "cargo:vimcats" = { version = "latest", features = "cli" }
 "aqua:LuaLS/lua-language-server" = "latest"
 
-[tasks.fmt]
-run = "stylua lua/"
+[tasks.lint]
+run = [
+  { task = "lint-format" },
+  { task = "lint-lsp" },
+]
 
-[tasks.ls-check]
+[tasks.lint-format]
+run = "stylua --check lua/"
+
+[tasks.lint-lsp]
 run = '''
 VIMRUNTIME=$(nvim --headless --clean -u NONE --noplugin "+lua io.write(vim.env.VIMRUNTIME)" +qa) \
   lua-language-server --check . --checklevel=Warning --configpath luarc.json
 '''
+
+[tasks.format]
+run = "stylua lua/"
 
 [tasks.doc]
 run = '''
