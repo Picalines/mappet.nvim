@@ -10,3 +10,20 @@ run = '''
 mkdir -p doc
 vimcats -f -i 2 --layout mini:2 lua/mappet.lua > doc/mappet.txt
 '''
+
+[tasks.test]
+depends = ["dev-deps"]
+run = "nvim --headless --noplugin -u ./tests/run.lua"
+
+[tasks.dev-deps]
+run = '''
+mkdir -p deps
+if [ ! -d deps/mini.test/.git ]; then
+  git clone \
+    --filter=blob:none \
+    --branch stable \
+    --depth 1 \
+    https://github.com/nvim-mini/mini.test \
+    deps/mini.test
+fi
+'''
