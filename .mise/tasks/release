@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+#MISE description="Create next semantic git tag"
+#USAGE arg "[bump]" help="Version bump level" default="patch" {
+#USAGE   choices "major" "minor" "patch"
+#USAGE }
+
+latest_tag=$(git describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null || true)
+if [ -z "$latest_tag" ]; then
+  latest_tag="v0.0.0"
+fi
+
+version=${latest_tag#v}
+IFS=. read -r major minor patch <<< "$version"
+
+case "${usage_bump?}" in
+  major)
+    major=$((major + 1))
+    minor=0
+    patch=0
+    ;;
+  minor)
+    minor=$((minor + 1))
+    patch=0
+    ;;
+  patch)
+    patch=$((patch + 1))
+    ;;
+esac
+
+new_tag="v${major}.${minor}.${patch}"
+
+if git rev-parse -q --verify "refs/tags/$new_tag" >/dev/null; then
+  echo "error: $new_tag tag already exists"
+  exit 1
+fi
+
+git tag -a "$new_tag" -m "Release $new_tag"
+
+echo "created tag: $new_tag"
+echo "push with: git push origin $new_tag"
