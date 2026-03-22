@@ -1,9 +1,16 @@
 [tools]
 stylua = "latest"
 "cargo:vimcats" = { version = "latest", features = "cli" }
+"aqua:LuaLS/lua-language-server" = "latest"
 
 [tasks.fmt]
 run = "stylua lua/"
+
+[tasks.ls-check]
+run = '''
+VIMRUNTIME=$(nvim --headless --clean -u NONE --noplugin "+lua io.write(vim.env.VIMRUNTIME)" +qa) \
+  lua-language-server --check . --checklevel=Warning --configpath luarc.json
+'''
 
 [tasks.doc]
 run = '''

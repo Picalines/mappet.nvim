@@ -1,0 +1,11 @@
+{
+  "runtime.version": "LuaJIT",
+  "workspace.library": [
+    "${env:VIMRUNTIME}"
+  ],
+  "workspace.checkThirdParty": false,
+  "diagnostics.globals": [
+    "vim",
+    "MiniTest"
+  ]
+}
