@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Neovim
+        uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+
+      - name: Setup mise
+        uses: jdx/mise-action@v2
+        with:
+          install: true
+          cache: true
+
+      - name: Run lint task
+        run: mise run lint
+
+      - name: Ensure repo is clean
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --short
+            echo "error: lint modified files"
+            exit 1
+          fi
+
+  check-doc:
+    name: Docs up-to-date
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Neovim
+        uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+
+      - name: Setup mise
+        uses: jdx/mise-action@v2
+        with:
+          install: true
+          cache: true
+
+      - name: Regenerate docs
+        run: mise run doc
+
+      - name: Ensure doc/ is clean
+        run: |
+          if [ -n "$(git status --porcelain -- doc)" ]; then
+            git status --short -- doc
+            echo "error: doc/ is out of date"
+            exit 1
+          fi
