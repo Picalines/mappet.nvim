@@ -15,7 +15,6 @@ Full docs: [`doc/mappet.txt`](doc/mappet.txt) (`:help mappet`).
 <summary>With <code>vim.pack</code></summary>
 
 ```lua
--- Experimental built-in, https://neovim.io/doc/user/pack/#vim.pack.add()
 vim.pack.add({ 'https://github.com/Picalines/mappet.nvim' })
 ```
 </details>
