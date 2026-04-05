@@ -250,7 +250,7 @@ local function apply_maps(entries, maps, bufnr)
 
     local opts = vim.deepcopy(m.opts)
     if bufnr ~= nil then
-      opts.buffer = bufnr
+      opts.buf = bufnr
     end
 
     local ok = pcall(vim.keymap.set, m.mode, m.lhs, m.rhs, opts)
