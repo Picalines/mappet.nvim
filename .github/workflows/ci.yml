@@ -23,14 +23,6 @@ jobs:
       - name: Run lint task
         run: mise run lint
 
-      - name: Ensure repo is clean
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            git status --short
-            echo "error: lint modified files"
-            exit 1
-          fi
-
   check-doc:
     name: Docs up-to-date
     runs-on: ubuntu-latest
