@@ -4,21 +4,20 @@ stylua = "latest"
 "aqua:LuaLS/lua-language-server" = "latest"
 
 [tasks.lint]
-run = [
-  { task = "lint-format" },
-  { task = "lint-lsp" },
-]
+alias = "l"
+depends = "lint:*"
 
-[tasks.lint-format]
+[tasks."lint:format"]
 run = "stylua --check lua/"
 
-[tasks.lint-lsp]
+[tasks."lint:lsp"]
 run = '''
 VIMRUNTIME=$(nvim --headless --clean -u NONE --noplugin "+lua io.write(vim.env.VIMRUNTIME)" +qa) \
   lua-language-server --check . --checklevel=Warning --configpath luarc.json
 '''
 
 [tasks.format]
+alias = "f"
 run = "stylua lua/"
 
 [tasks.doc]
@@ -28,6 +27,7 @@ vimcats -f -i 2 --layout mini:2 lua/mappet.lua > doc/mappet.txt
 '''
 
 [tasks.test]
+alias = "t"
 depends = ["dev-deps"]
 run = "nvim --headless --noplugin -u ./tests/run.lua"
 
