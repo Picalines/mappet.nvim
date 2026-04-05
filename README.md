@@ -7,7 +7,9 @@ Declarative keymap DSL for Neovim
 - Compose nested declarations with `sub { ... }`, reuse [`vim.keymap.set()`](https://neovim.io/doc/user/lua/#vim.keymap.set()) options
 - Easier syntax for buffer autocommands with `template()`
 
-Full docs: [`doc/mappet.txt`](doc/mappet.txt) (`:help mappet`).
+Requires Neovim `0.12+`
+
+Full docs: [`doc/mappet.txt`](doc/mappet.txt) (`:help mappet`)
 
 ## Install
 
@@ -90,7 +92,7 @@ vim.api.nvim_create_autocmd('FileType', {
 })
 ```
 
-For all options, modes, and API details, see [`doc/mappet.txt`](doc/mappet.txt).
+For all options, modes, and API details, see [`doc/mappet.txt`](doc/mappet.txt)
 
 ## Why?
 
