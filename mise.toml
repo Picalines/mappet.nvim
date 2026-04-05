@@ -1,4 +1,5 @@
 [tools]
+neovim = "0.12"
 stylua = "latest"
 "cargo:vimcats" = { version = "latest", features = "cli" }
 "aqua:LuaLS/lua-language-server" = "latest"
