@@ -58,6 +58,16 @@ MappetRhs                                                            *MappetRhs*
     string|fun()
 
 
+MappetRhsTable : vim.keymap.set.Opts                            *MappetRhsTable*
+  Table form accepted by `map(lhs) { ... }`.
+  The first indexed item is the rhs, the remaining keys are
+  forwarded to |vim.keymap.set| options.
+  The `buffer` option is not supported here, use `keymap.buffer(...)` instead.
+
+  Fields: ~
+    {1} (MappetRhs)
+
+
 MappetSpec : vim.keymap.set.Opts                                    *MappetSpec*
   Scope options merged into nested mappings.
 

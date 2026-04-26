@@ -42,6 +42,13 @@ local M = {}
 ---Right-hand side accepted by |vim.keymap.set|.
 ---@alias MappetRhs string|fun()
 
+---Table form accepted by `map(lhs) { ... }`.
+---The first indexed item is the rhs, the remaining keys are
+---forwarded to |vim.keymap.set| options.
+---The `buffer` option is not supported here, use `keymap.buffer(...)` instead.
+---@class MappetRhsTable: vim.keymap.set.Opts
+---@field [1] MappetRhs
+
 ---Scope options merged into nested mappings.
 ---
 ---Examples:
@@ -510,18 +517,20 @@ end
 ---}
 ---@usage ]]
 function M.map(lhs, desc)
-  ---@param action MappetRhs|table
+  ---@param action MappetRhs|MappetRhsTable
   ---@return MappetMapNode
   return function(action)
     ---@type vim.keymap.set.Opts
     local opts = {}
 
+    ---@type MappetRhs
     local rhs
     if type(action) == 'table' then
       rhs = action[1]
       opts = vim.deepcopy(action)
       opts[1] = nil
     else
+      ---@cast action MappetRhs
       rhs = action
     end
 
